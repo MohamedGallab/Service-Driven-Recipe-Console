@@ -52,6 +52,7 @@ app.MapGet("/list-recipes", () => recipesList);
 app.MapPost("/add-recipe", (Recipe recipe) =>
 {
 	recipesList.Add(recipe);
+	Save();
 	return Results.Ok();
 });
 
