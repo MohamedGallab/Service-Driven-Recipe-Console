@@ -55,6 +55,17 @@ app.MapPost("/add-recipe", (Recipe recipe) =>
 	return Results.Ok();
 });
 
+app.MapDelete("/delete-recipe", (Guid guid) =>
+{
+	var recipe = recipesList.Find(recipe => recipe.Id == guid);
+	if(recipe == null)
+	{
+		return Results.NotFound();
+	}
+	recipesList.Remove(recipe);
+	return Results.Ok();
+});
+
 void Save()
 {
 	File.WriteAllText(recipesFile, JsonSerializer.Serialize(recipesList));
