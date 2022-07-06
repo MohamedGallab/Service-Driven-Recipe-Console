@@ -1,13 +1,13 @@
+using RecipeAPI;
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -16,28 +16,49 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-	"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// load previous categories if exists
+string categoriesFile = "categories.json";
+string jsonCategoriesString;
+var categoriesList = new List<string>();
 
-app.MapGet("/weatherforecast", () =>
+if (File.Exists(categoriesFile))
 {
-	var forecast = Enumerable.Range(1, 5).Select(index =>
-		new WeatherForecast
-		(
-			DateTime.Now.AddDays(index),
-			Random.Shared.Next(-20, 55),
-			summaries[Random.Shared.Next(summaries.Length)]
-		))
-		.ToArray();
-	return forecast;
-})
-.WithName("GetWeatherForecast");
+	if (new FileInfo(categoriesFile).Length > 0)
+	{
+		jsonCategoriesString = File.ReadAllText(categoriesFile);
+		categoriesList = JsonSerializer.Deserialize<List<string>>(jsonCategoriesString)!;
+	}
+}
+
+// load previous recipes if exists
+string recipesFile = "Recipes.json";
+string jsonRecipesString;
+var recipesList = new List<Recipe>();
+
+if (File.Exists(recipesFile))
+{
+	if (new FileInfo(recipesFile).Length > 0)
+	{
+		jsonRecipesString = File.ReadAllText(recipesFile);
+		recipesList = JsonSerializer.Deserialize<List<Recipe>>(jsonRecipesString)!;
+	}
+}
+
+// routes
+app.MapGet("/", () => "Hello World!");
+
+app.MapGet("/list-recipes", () => recipesList);
+
+app.MapPost("/add-recipe", (Recipe recipe) =>
+{
+	recipesList.Add(recipe);
+	return Results.Ok();
+});
+
+void Save()
+{
+	File.WriteAllText(recipesFile, JsonSerializer.Serialize(recipesList));
+	File.WriteAllText(categoriesFile, JsonSerializer.Serialize(categoriesList));
+}
 
 app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-	public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
