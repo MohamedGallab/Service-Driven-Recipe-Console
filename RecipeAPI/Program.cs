@@ -44,24 +44,24 @@ if (File.Exists(recipesFile))
 	}
 }
 
-// routes
+// endpoints
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/list-recipes", () => 
+app.MapGet("/recipes", () =>
 {
-	Results.Ok(recipesList);
+	return Results.Ok(recipesList);
 });
 
-app.MapPost("/add-recipe", (Recipe recipe) =>
+app.MapPost("/recipes", (Recipe recipe) =>
 {
 	recipesList.Add(recipe);
 	Save();
-	return Results.Created($"/todoitems/{recipe.Id}", recipe);
+	return Results.Created($"/recipes/{recipe.Id}", recipe);
 });
 
-app.MapDelete("/delete-recipe", (Guid id) =>
+app.MapDelete("/recipes", (Guid id) =>
 {
-	if(recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
+	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
 		Save();
@@ -70,34 +70,38 @@ app.MapDelete("/delete-recipe", (Guid id) =>
 	return Results.NotFound();
 });
 
-app.MapPut("/edit-recipe", (Recipe editedRecipe) =>
+app.MapPut("/recipes", (Recipe editedRecipe) =>
 {
 	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
 		recipesList.Add(editedRecipe);
 		Save();
-		return Results.Ok(editedRecipe);
+		return Results.NoContent();
 	}
 	return Results.NotFound();
 });
 
-app.MapGet("/list-categories", () =>
+app.MapGet("/categories", () =>
 {
-	Results.Ok(categoriesList);
+	return Results.Ok(categoriesList);
 });
 
-app.MapPost("/add-category", (string category) =>
+app.MapPost("/categories", (string category) =>
 {
 	categoriesList.Add(category);
 	Save();
-	return Results.Created($"/todoitems/{category}", category);
+	return Results.Created($"/categories/{category}", category);
 });
 
-app.MapDelete("/delete-category", (string category) =>
+app.MapDelete("/categories", (string category) =>
 {
 	if (categoriesList.Contains(category))
 	{
+		foreach (Recipe recipe in recipesList)
+		{
+			recipe.Categories.Remove(category);
+		}
 		categoriesList.Remove(category);
 		Save();
 		return Results.Ok(category);
@@ -105,14 +109,21 @@ app.MapDelete("/delete-category", (string category) =>
 	return Results.NotFound();
 });
 
-app.MapPut("/edit-category", (string oldCategory, string editedcategory) =>
+app.MapPut("/categories", (string oldCategory, string editedcategory) =>
 {
 	if (categoriesList.Contains(oldCategory))
 	{
 		categoriesList.Remove(oldCategory);
 		categoriesList.Add(editedcategory);
+
+		foreach (var recipe in recipesList)
+		{
+			recipe.Categories.Remove(oldCategory);
+			recipe.Categories.Add(editedcategory);
+		}
+
 		Save();
-		return Results.Ok(editedcategory);
+		return Results.NoContent();
 	}
 	return Results.NotFound();
 });
