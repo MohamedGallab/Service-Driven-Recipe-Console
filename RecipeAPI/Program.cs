@@ -47,24 +47,74 @@ if (File.Exists(recipesFile))
 // routes
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/list-recipes", () => recipesList);
+app.MapGet("/list-recipes", () => 
+{
+	Results.Ok(recipesList);
+});
 
 app.MapPost("/add-recipe", (Recipe recipe) =>
 {
 	recipesList.Add(recipe);
 	Save();
-	return Results.Ok();
+	return Results.Created($"/todoitems/{recipe.Id}", recipe);
 });
 
-app.MapDelete("/delete-recipe", (Guid guid) =>
+app.MapDelete("/delete-recipe", (Guid id) =>
 {
-	var recipe = recipesList.Find(recipe => recipe.Id == guid);
-	if(recipe == null)
+	if(recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
-		return Results.NotFound();
+		recipesList.Remove(recipe);
+		Save();
+		return Results.Ok(recipe);
 	}
-	recipesList.Remove(recipe);
-	return Results.Ok();
+	return Results.NotFound();
+});
+
+app.MapPut("/edit-recipe", (Recipe editedRecipe) =>
+{
+	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
+	{
+		recipesList.Remove(recipe);
+		recipesList.Add(editedRecipe);
+		Save();
+		return Results.Ok(editedRecipe);
+	}
+	return Results.NotFound();
+});
+
+app.MapGet("/list-categories", () =>
+{
+	Results.Ok(categoriesList);
+});
+
+app.MapPost("/add-category", (string category) =>
+{
+	categoriesList.Add(category);
+	Save();
+	return Results.Created($"/todoitems/{category}", category);
+});
+
+app.MapDelete("/delete-category", (string category) =>
+{
+	if (categoriesList.Contains(category))
+	{
+		categoriesList.Remove(category);
+		Save();
+		return Results.Ok(category);
+	}
+	return Results.NotFound();
+});
+
+app.MapPut("/edit-category", (string oldCategory, string editedcategory) =>
+{
+	if (categoriesList.Contains(oldCategory))
+	{
+		categoriesList.Remove(oldCategory);
+		categoriesList.Add(editedcategory);
+		Save();
+		return Results.Ok(editedcategory);
+	}
+	return Results.NotFound();
 });
 
 void Save()
