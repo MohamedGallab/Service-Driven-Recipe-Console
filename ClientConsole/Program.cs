@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using static ClientConsole.ConsoleUI;
 
 HttpClient client = new();
@@ -120,7 +121,7 @@ async void DeleteCategories(List<string> categoriesList)
 	await Task.WhenAll(deleteTasks);
 }
 
-async void PutCategory(string oldCategory, string editedCategory)
+async void PutCategory(string oldCategory, String editedCategory)
 {
-	await client.PutAsJsonAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", editedCategory);
+	await client.PutAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", null);
 }
