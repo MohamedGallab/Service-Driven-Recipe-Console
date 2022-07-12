@@ -1,11 +1,18 @@
 ﻿using ClientConsole;
+using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using static ClientConsole.ConsoleUI;
 
+var builder = new ConfigurationBuilder()
+		.SetBasePath(Directory.GetCurrentDirectory())
+		.AddJsonFile("appsettings.Development.json");
+
+var configuration = builder.Build();
+
 HttpClient client = new();
-client.BaseAddress = new Uri("https://localhost:7131/");
+client.BaseAddress = new Uri(configuration["BaseUrl"]);
 client.DefaultRequestHeaders.Accept.Clear();
 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
