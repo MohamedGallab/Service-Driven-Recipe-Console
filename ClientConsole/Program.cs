@@ -42,34 +42,34 @@ while (true)
 		case "Add a Recipe":
 			{
 				Recipe recipe = CreateRecipe(await ListCategories());
-				PostRecipe(recipe);
+				await PostRecipe(recipe);
 				break;
 			}
 		case "Delete a Recipe":
 			{
 				var selectedRecipes = ChooseRecipes(await ListRecipes());
-				DeleteRecipes(selectedRecipes);
+				await DeleteRecipes(selectedRecipes);
 				break;
 			}
 		case "Edit a Recipe":
 			{
 				Recipe? recipe = EditRecipe(await ListRecipes(), await ListCategories());
 				if (recipe != null)
-					PutRecipe(recipe);
+					await PutRecipe(recipe);
 				break;
 			}
 		case "Add a Category":
 			string category = CreateCategory();
-			PostCategory(category);
+			await PostCategory(category);
 			break;
 		case "Delete a Category":
 			var selectedCategories = ChooseCategories(await ListCategories());
-			DeleteCategories(selectedCategories);
+			await DeleteCategories(selectedCategories);
 			break;
 		case "Edit a Category":
 			var oldCategory = ChooseCategory(await ListCategories());
 			var newCategory = CreateCategory();
-			PutCategory(oldCategory, newCategory);
+			await PutCategory(oldCategory, newCategory);
 			break;
 	}
 }
@@ -90,12 +90,12 @@ async Task<List<string>> ListCategories()
 	return new List<string>();
 }
 
-async void PostRecipe(Recipe recipe)
+async Task PostRecipe(Recipe recipe)
 {
 	await client.PostAsJsonAsync("recipes", recipe);
 }
 
-async void DeleteRecipes(List<Recipe> recipesList)
+async Task DeleteRecipes(List<Recipe> recipesList)
 {
 	var deleteTasks = new List<Task>();
 	foreach (var recipe in recipesList)
@@ -103,17 +103,17 @@ async void DeleteRecipes(List<Recipe> recipesList)
 	await Task.WhenAll(deleteTasks);
 }
 
-async void PutRecipe(Recipe recipe)
+async Task PutRecipe(Recipe recipe)
 {
 	await client.PutAsJsonAsync("recipes", recipe);
 }
 
-async void PostCategory(string category)
+async Task PostCategory(string category)
 {
 	await client.PostAsJsonAsync("categories", category);
 }
 
-async void DeleteCategories(List<string> categoriesList)
+async Task DeleteCategories(List<string> categoriesList)
 {
 	var deleteTasks = new List<Task>();
 	foreach (var category in categoriesList)
@@ -121,7 +121,7 @@ async void DeleteCategories(List<string> categoriesList)
 	await Task.WhenAll(deleteTasks);
 }
 
-async void PutCategory(string oldCategory, String editedCategory)
+async Task PutCategory(string oldCategory, String editedCategory)
 {
 	await client.PutAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", null);
 }
