@@ -45,8 +45,6 @@ if (File.Exists(recipesFile))
 }
 
 // endpoints
-app.MapGet("/", () => "Hello World!");
-
 app.MapGet("/recipes", () =>
 {
 	return Results.Ok(recipesList);
