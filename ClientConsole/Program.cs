@@ -42,40 +42,90 @@ while (true)
 	{
 		case "List all Recipes":
 			{
-				DisplayRecipes(await ListRecipesAsync());
+				try
+				{
+					DisplayRecipes(await ListRecipesAsync());
+				}
+				catch (Exception)
+				{
+					DisplayErrorMessage();
+				}
 				break;
 			}
 		case "Add a Recipe":
 			{
-				Recipe recipe = CreateRecipe(await ListCategoriesAsync());
-				await PostRecipeAsync(recipe);
+				try
+				{
+					Recipe recipe = CreateRecipe(await ListCategoriesAsync());
+					await PostRecipeAsync(recipe);
+				}
+				catch (Exception)
+				{
+					DisplayErrorMessage();
+				}
 				break;
 			}
 		case "Delete a Recipe":
 			{
-				var selectedRecipes = ChooseRecipes(await ListRecipesAsync());
-				await DeleteRecipesAsync(selectedRecipes);
+				try
+				{
+					var selectedRecipes = ChooseRecipes(await ListRecipesAsync());
+					await DeleteRecipesAsync(selectedRecipes);
+				}
+				catch (Exception)
+				{
+					DisplayErrorMessage();
+				}
 				break;
 			}
 		case "Edit a Recipe":
 			{
-				Recipe? recipe = EditRecipe(await ListRecipesAsync(), await ListCategoriesAsync());
-				if (recipe != null)
-					await PutRecipeAsync(recipe);
+				try
+				{
+					Recipe? recipe = EditRecipe(await ListRecipesAsync(), await ListCategoriesAsync());
+					if (recipe != null)
+						await PutRecipeAsync(recipe);
+				}
+				catch (Exception)
+				{
+					DisplayErrorMessage();
+					
+				}
 				break;
 			}
 		case "Add a Category":
 			string category = CreateCategory();
-			await PostCategoryAsync(category);
+			try
+			{
+				await PostCategoryAsync(category);
+			}
+			catch (Exception)
+			{
+				DisplayErrorMessage();
+			}
 			break;
 		case "Delete a Category":
-			var selectedCategories = ChooseCategories(await ListCategoriesAsync());
-			await DeleteCategoriesAsync(selectedCategories);
+			try
+			{
+				var selectedCategories = ChooseCategories(await ListCategoriesAsync());
+				await DeleteCategoriesAsync(selectedCategories);
+			}
+			catch (Exception)
+			{
+				DisplayErrorMessage();
+			}
 			break;
 		case "Edit a Category":
-			var oldCategory = ChooseCategory(await ListCategoriesAsync());
-			var newCategory = CreateCategory();
-			await PutCategoryAsync(oldCategory, newCategory);
+			try
+			{
+				var oldCategory = ChooseCategory(await ListCategoriesAsync());
+				var newCategory = CreateCategory();
+				await PutCategoryAsync(oldCategory, newCategory);
+			}
+			catch (Exception)
+			{
+				DisplayErrorMessage();
+			}
 			break;
 	}
 }
@@ -98,7 +148,8 @@ async Task<List<string>> ListCategoriesAsync()
 
 async Task PostRecipeAsync(Recipe recipe)
 {
-	await client.PostAsJsonAsync("recipes", recipe);
+	var response = await client.PostAsJsonAsync("recipes", recipe);
+	response.EnsureSuccessStatusCode();
 }
 
 async Task DeleteRecipesAsync(List<Recipe> recipesList)
@@ -111,12 +162,14 @@ async Task DeleteRecipesAsync(List<Recipe> recipesList)
 
 async Task PutRecipeAsync(Recipe recipe)
 {
-	await client.PutAsJsonAsync("recipes", recipe);
+	var response = await client.PutAsJsonAsync("recipes", recipe);
+	response.EnsureSuccessStatusCode();
 }
 
 async Task PostCategoryAsync(string category)
 {
-	await client.PostAsJsonAsync("categories", category);
+	var response = await client.PostAsJsonAsync("categories", category);
+	response.EnsureSuccessStatusCode();
 }
 
 async Task DeleteCategoriesAsync(List<string> categoriesList)
@@ -129,5 +182,6 @@ async Task DeleteCategoriesAsync(List<string> categoriesList)
 
 async Task PutCategoryAsync(string oldCategory, String editedCategory)
 {
-	await client.PutAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", null);
+	var response = await client.PutAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", null);
+	response.EnsureSuccessStatusCode();
 }

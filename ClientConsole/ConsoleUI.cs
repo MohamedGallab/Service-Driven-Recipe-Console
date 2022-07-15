@@ -199,4 +199,11 @@ internal class ConsoleUI
 
 		return chosenCategory;
 	}
+	public static void DisplayErrorMessage(string s = "An error has occured try again later please")
+	{
+		AnsiConsole.MarkupLine(s);
+		Console.ReadKey();
+		AnsiConsole.Clear();
+		return;
+	}
 }
