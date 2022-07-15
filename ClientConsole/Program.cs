@@ -168,7 +168,7 @@ async Task PutRecipeAsync(Recipe recipe)
 
 async Task PostCategoryAsync(string category)
 {
-	var response = await client.PostAsJsonAsync("categories", category);
+	var response = await client.PostAsJsonAsync("categories?category="+category, category);
 	response.EnsureSuccessStatusCode();
 }
 
