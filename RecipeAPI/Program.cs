@@ -16,7 +16,7 @@ if (File.Exists(categoriesFile))
 {
 	if (new FileInfo(categoriesFile).Length > 0)
 	{
-		jsonCategoriesString = File.ReadAllText(categoriesFile);
+		jsonCategoriesString = await File.ReadAllTextAsync(categoriesFile);
 		categoriesList = JsonSerializer.Deserialize<List<string>>(jsonCategoriesString)!;
 	}
 }
@@ -30,7 +30,7 @@ if (File.Exists(recipesFile))
 {
 	if (new FileInfo(recipesFile).Length > 0)
 	{
-		jsonRecipesString = File.ReadAllText(recipesFile);
+		jsonRecipesString = await File.ReadAllTextAsync(recipesFile);
 		recipesList = JsonSerializer.Deserialize<List<Recipe>>(jsonRecipesString)!;
 	}
 }
@@ -119,8 +119,8 @@ app.MapPut("/categories", (string oldCategory, string editedcategory) =>
 
 void Save()
 {
-	File.WriteAllText(recipesFile, JsonSerializer.Serialize(recipesList));
-	File.WriteAllText(categoriesFile, JsonSerializer.Serialize(categoriesList));
+	File.WriteAllTextAsync(recipesFile, JsonSerializer.Serialize(recipesList));
+	File.WriteAllTextAsync(categoriesFile, JsonSerializer.Serialize(categoriesList));
 }
 
 app.Run();

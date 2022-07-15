@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace RecipeAPI;
 
-namespace RecipeAPI;
-
-internal class Recipe
+public class Recipe
 {
 	public Guid Id { get; set; } = Guid.NewGuid();
 	public string Title { get; set; } = string.Empty;
