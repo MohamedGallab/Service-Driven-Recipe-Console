@@ -41,31 +41,31 @@ app.MapGet("/recipes", () =>
 	return Results.Ok(recipesList);
 });
 
-app.MapPost("/recipes", (Recipe recipe) =>
+app.MapPost("/recipes", async (Recipe recipe) =>
 {
 	recipesList.Add(recipe);
-	Save();
+	await SaveAsync();
 	return Results.Created($"/recipes/{recipe.Id}", recipe);
 });
 
-app.MapDelete("/recipes", (Guid id) =>
+app.MapDelete("/recipes", async (Guid id) =>
 {
 	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
-		Save();
+		await SaveAsync();
 		return Results.Ok(recipe);
 	}
 	return Results.NotFound();
 });
 
-app.MapPut("/recipes", (Recipe editedRecipe) =>
+app.MapPut("/recipes", async (Recipe editedRecipe) =>
 {
 	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
 		recipesList.Add(editedRecipe);
-		Save();
+		await SaveAsync();
 		return Results.NoContent();
 	}
 	return Results.NotFound();
@@ -76,14 +76,14 @@ app.MapGet("/categories", () =>
 	return Results.Ok(categoriesList);
 });
 
-app.MapPost("/categories", (string category) =>
+app.MapPost("/categories", async (string category) =>
 {
 	categoriesList.Add(category);
-	Save();
+	await SaveAsync();
 	return Results.Created($"/categories/{category}", category);
 });
 
-app.MapDelete("/categories", (string category) =>
+app.MapDelete("/categories", async (string category) =>
 {
 	if (categoriesList.Contains(category))
 	{
@@ -92,13 +92,13 @@ app.MapDelete("/categories", (string category) =>
 			recipe.Categories.Remove(category);
 		}
 		categoriesList.Remove(category);
-		Save();
+		await SaveAsync();
 		return Results.Ok(category);
 	}
 	return Results.NotFound();
 });
 
-app.MapPut("/categories", (string oldCategory, string editedcategory) =>
+app.MapPut("/categories", async (string oldCategory, string editedcategory) =>
 {
 	if (categoriesList.Contains(oldCategory))
 	{
@@ -111,16 +111,18 @@ app.MapPut("/categories", (string oldCategory, string editedcategory) =>
 			recipe.Categories.Add(editedcategory);
 		}
 
-		Save();
+		await SaveAsync();
 		return Results.NoContent();
 	}
 	return Results.NotFound();
 });
 
-void Save()
+async Task SaveAsync()
 {
-	File.WriteAllTextAsync(recipesFile, JsonSerializer.Serialize(recipesList));
-	File.WriteAllTextAsync(categoriesFile, JsonSerializer.Serialize(categoriesList));
+	await Task.WhenAll(
+		File.WriteAllTextAsync(recipesFile, JsonSerializer.Serialize(recipesList)),
+		File.WriteAllTextAsync(categoriesFile, JsonSerializer.Serialize(categoriesList))
+		);
 }
 
 app.Run();
