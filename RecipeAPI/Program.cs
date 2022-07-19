@@ -41,6 +41,15 @@ app.MapGet("/recipes", () =>
 	return Results.Ok(recipesList);
 });
 
+app.MapGet("/recipes/{id}", (Guid id) =>
+{
+	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
+	{
+		return Results.Ok(recipe);
+	}
+	return Results.NotFound();
+});
+
 app.MapPost("/recipes", async (Recipe recipe) =>
 {
 	recipesList.Add(recipe);
@@ -78,6 +87,11 @@ app.MapGet("/categories", () =>
 
 app.MapPost("/categories", async (string category) =>
 {
+	if (category == String.Empty)
+	{
+		return Results.BadRequest();
+	}
+
 	categoriesList.Add(category);
 	await SaveAsync();
 	return Results.Created($"/categories/{category}", category);
@@ -85,36 +99,49 @@ app.MapPost("/categories", async (string category) =>
 
 app.MapDelete("/categories", async (string category) =>
 {
-	if (categoriesList.Contains(category))
+	if (category == String.Empty)
 	{
-		foreach (Recipe recipe in recipesList)
-		{
-			recipe.Categories.Remove(category);
-		}
-		categoriesList.Remove(category);
-		await SaveAsync();
-		return Results.Ok(category);
+		return Results.BadRequest();
 	}
-	return Results.NotFound();
+
+	if (!categoriesList.Contains(category))
+	{
+		return Results.NotFound();
+	}
+
+	foreach (Recipe recipe in recipesList)
+	{
+		recipe.Categories.Remove(category);
+	}
+	categoriesList.Remove(category);
+	await SaveAsync();
+	return Results.Ok(category);
 });
 
 app.MapPut("/categories", async (string oldCategory, string editedcategory) =>
 {
-	if (categoriesList.Contains(oldCategory))
+	if (editedcategory==String.Empty)
 	{
-		categoriesList.Remove(oldCategory);
-		categoriesList.Add(editedcategory);
-
-		foreach (var recipe in recipesList)
-		{
-			recipe.Categories.Remove(oldCategory);
-			recipe.Categories.Add(editedcategory);
-		}
-
-		await SaveAsync();
-		return Results.NoContent();
+		return Results.BadRequest();
 	}
-	return Results.NotFound();
+
+	if (!categoriesList.Contains(oldCategory))
+	{
+		return Results.NotFound();
+	}
+
+	categoriesList.Remove(oldCategory);
+	categoriesList.Add(editedcategory);
+
+	foreach (var recipe in recipesList)
+	{
+		recipe.Categories.Remove(oldCategory);
+		recipe.Categories.Add(editedcategory);
+	}
+
+	await SaveAsync();
+	return Results.NoContent();
+
 });
 
 async Task SaveAsync()
