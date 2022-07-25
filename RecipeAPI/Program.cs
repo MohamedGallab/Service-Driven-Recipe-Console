@@ -3,9 +3,19 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("Cors Policy",
+		policy =>
+		{
+			policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+		});
+});
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseCors("Cors Policy");
 
 // load previous categories if exists
 string categoriesFile = "categories.json";
@@ -52,6 +62,7 @@ app.MapGet("/recipes/{id}", (Guid id) =>
 
 app.MapPost("/recipes", async (Recipe recipe) =>
 {
+	recipe.Id = Guid.NewGuid();
 	recipesList.Add(recipe);
 	await SaveAsync();
 	return Results.Created($"/recipes/{recipe.Id}", recipe);
@@ -120,7 +131,7 @@ app.MapDelete("/categories", async (string category) =>
 
 app.MapPut("/categories", async (string oldCategory, string editedcategory) =>
 {
-	if (editedcategory==String.Empty)
+	if (editedcategory == String.Empty)
 	{
 		return Results.BadRequest();
 	}
