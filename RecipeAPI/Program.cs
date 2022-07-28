@@ -68,7 +68,7 @@ app.MapPost("/recipes", async (Recipe recipe) =>
 	return Results.Created($"/recipes/{recipe.Id}", recipe);
 });
 
-app.MapDelete("/recipes", async (Guid id) =>
+app.MapDelete("/recipes/{id}", async (Guid id) =>
 {
 	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
@@ -79,7 +79,7 @@ app.MapDelete("/recipes", async (Guid id) =>
 	return Results.NotFound();
 });
 
-app.MapPut("/recipes", async (Recipe editedRecipe) =>
+app.MapPut("/recipes/{id}", async (Recipe editedRecipe) =>
 {
 	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
 	{
