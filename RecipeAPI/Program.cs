@@ -1,4 +1,4 @@
-using RecipeAPI;
+using RecipeAPI.Models;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -108,7 +108,7 @@ app.MapPost("/categories", async (string category) =>
 	return Results.Created($"/categories/{category}", category);
 });
 
-app.MapDelete("/categories", async (string category) =>
+app.MapDelete("/categories/{category}", async (string category) =>
 {
 	if (category == String.Empty)
 	{
@@ -129,25 +129,25 @@ app.MapDelete("/categories", async (string category) =>
 	return Results.Ok(category);
 });
 
-app.MapPut("/categories", async (string oldCategory, string editedcategory) =>
+app.MapPut("/categories/{category}", async (string category, string editedCategory) =>
 {
-	if (editedcategory == String.Empty)
+	if (editedCategory == String.Empty)
 	{
 		return Results.BadRequest();
 	}
 
-	if (!categoriesList.Contains(oldCategory))
+	if (!categoriesList.Contains(category))
 	{
 		return Results.NotFound();
 	}
 
-	categoriesList.Remove(oldCategory);
-	categoriesList.Add(editedcategory);
+	categoriesList.Remove(category);
+	categoriesList.Add(editedCategory);
 
 	foreach (var recipe in recipesList)
 	{
-		recipe.Categories.Remove(oldCategory);
-		recipe.Categories.Add(editedcategory);
+		recipe.Categories.Remove(category);
+		recipe.Categories.Add(editedCategory);
 	}
 
 	await SaveAsync();
