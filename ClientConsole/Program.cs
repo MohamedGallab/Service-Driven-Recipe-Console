@@ -1,4 +1,4 @@
-﻿using ClientConsole;
+﻿using ClientConsole.Models;
 using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 using System.Net.Http.Headers;

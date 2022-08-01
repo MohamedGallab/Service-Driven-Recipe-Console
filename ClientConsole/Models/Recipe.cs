@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClientConsole;
+namespace ClientConsole.Models;
 
 [TypeConverter(typeof(RecipeTypeConverter))]
 internal class Recipe

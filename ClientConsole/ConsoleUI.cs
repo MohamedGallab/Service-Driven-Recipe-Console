@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using ClientConsole.Models;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,6 +62,8 @@ internal class ConsoleUI
 	public static void DisplayRecipes(List<Recipe> recipesList)
 	{
 		var table = new Table();
+		table.Expand();
+		table.Border(TableBorder.Rounded);
 		table.AddColumn("Recipe Name");
 		table.AddColumn("Ingredients");
 		table.AddColumn("Instructions");
