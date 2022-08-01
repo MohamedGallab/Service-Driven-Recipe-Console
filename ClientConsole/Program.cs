@@ -44,7 +44,7 @@ while (true)
 			{
 				try
 				{
-					DisplayRecipes(await ListRecipesAsync());
+					DisplayRecipes(await GetRecipesAsync());
 				}
 				catch (Exception)
 				{
@@ -56,7 +56,7 @@ while (true)
 			{
 				try
 				{
-					Recipe recipe = CreateRecipe(await ListCategoriesAsync());
+					Recipe recipe = CreateRecipe(await GetCategoriesAsync());
 					await PostRecipeAsync(recipe);
 				}
 				catch (Exception)
@@ -69,7 +69,7 @@ while (true)
 			{
 				try
 				{
-					var selectedRecipes = ChooseRecipes(await ListRecipesAsync());
+					var selectedRecipes = ChooseRecipes(await GetRecipesAsync());
 					await DeleteRecipesAsync(selectedRecipes);
 				}
 				catch (Exception)
@@ -82,7 +82,7 @@ while (true)
 			{
 				try
 				{
-					Recipe? recipe = EditRecipe(await ListRecipesAsync(), await ListCategoriesAsync());
+					Recipe? recipe = EditRecipe(await GetRecipesAsync(), await GetCategoriesAsync());
 					if (recipe != null)
 						await PutRecipeAsync(recipe);
 				}
@@ -107,7 +107,7 @@ while (true)
 		case "Delete a Category":
 			try
 			{
-				var selectedCategories = ChooseCategories(await ListCategoriesAsync());
+				var selectedCategories = ChooseCategories(await GetCategoriesAsync());
 				await DeleteCategoriesAsync(selectedCategories);
 			}
 			catch (Exception)
@@ -118,7 +118,7 @@ while (true)
 		case "Edit a Category":
 			try
 			{
-				var oldCategory = ChooseCategory(await ListCategoriesAsync());
+				var oldCategory = ChooseCategory(await GetCategoriesAsync());
 				var newCategory = CreateCategory();
 				await PutCategoryAsync(oldCategory, newCategory);
 			}
@@ -130,7 +130,7 @@ while (true)
 	}
 }
 
-async Task<List<Recipe>> ListRecipesAsync()
+async Task<List<Recipe>> GetRecipesAsync()
 {
 	var recipeList = await client.GetFromJsonAsync<List<Recipe>>("recipes");
 	if (recipeList != null)
@@ -138,7 +138,7 @@ async Task<List<Recipe>> ListRecipesAsync()
 	return new List<Recipe>();
 }
 
-async Task<List<string>> ListCategoriesAsync()
+async Task<List<string>> GetCategoriesAsync()
 {
 	var categoriesList = await client.GetFromJsonAsync<List<string>>("categories");
 	if (categoriesList != null)
@@ -156,13 +156,13 @@ async Task DeleteRecipesAsync(List<Recipe> recipesList)
 {
 	var deleteTasks = new List<Task>();
 	foreach (var recipe in recipesList)
-		deleteTasks.Add(client.DeleteAsync("recipes?id=" + recipe.Id));
+		deleteTasks.Add(client.DeleteAsync($"recipes/{recipe.Id}"));
 	await Task.WhenAll(deleteTasks);
 }
 
 async Task PutRecipeAsync(Recipe recipe)
 {
-	var response = await client.PutAsJsonAsync("recipes", recipe);
+	var response = await client.PutAsJsonAsync($"recipes/{recipe.Id}", recipe);
 	response.EnsureSuccessStatusCode();
 }
 
@@ -176,12 +176,12 @@ async Task DeleteCategoriesAsync(List<string> categoriesList)
 {
 	var deleteTasks = new List<Task>();
 	foreach (var category in categoriesList)
-		deleteTasks.Add(client.DeleteAsync("categories?category=" + category));
+		deleteTasks.Add(client.DeleteAsync($"categories/{category}"));
 	await Task.WhenAll(deleteTasks);
 }
 
 async Task PutCategoryAsync(string oldCategory, String editedCategory)
 {
-	var response = await client.PutAsync($"categories?oldcategory={oldCategory}&editedcategory={editedCategory}", null);
+	var response = await client.PutAsync($"categories/{oldCategory}?editedcategory={editedCategory}", null);
 	response.EnsureSuccessStatusCode();
 }
