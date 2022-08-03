@@ -156,8 +156,11 @@ app.MapPut("/categories/{category}", async (string category, string editedCatego
 
 	foreach (var recipe in recipesList)
 	{
-		recipe.Categories.Remove(category);
-		recipe.Categories.Add(editedCategory);
+		if(recipe.Categories.Contains(category))
+		{
+			recipe.Categories.Remove(category);
+			recipe.Categories.Add(editedCategory);
+		}
 	}
 
 	await SaveAsync();
