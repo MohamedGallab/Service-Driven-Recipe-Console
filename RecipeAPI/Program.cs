@@ -91,14 +91,16 @@ app.MapDelete("/recipes/{id}", async (Guid id) =>
 
 app.MapPut("/recipes/{id}", async (Recipe editedRecipe) =>
 {
-	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
+	int oldRecipeIndex = recipesList.FindIndex(recipe => recipe.Id == editedRecipe.Id);
+
+	if (oldRecipeIndex == -1)
 	{
-		recipesList.Remove(recipe);
-		recipesList.Add(editedRecipe);
-		await SaveAsync();
-		return Results.NoContent();
+		return Results.NotFound();
 	}
-	return Results.NotFound();
+
+	recipesList[oldRecipeIndex] = editedRecipe;
+	await SaveAsync();
+	return Results.NoContent();
 });
 
 app.MapGet("/categories", () =>
@@ -146,17 +148,17 @@ app.MapPut("/categories/{category}", async (string category, string editedCatego
 		return Results.BadRequest();
 	}
 
-	if (!categoriesList.Contains(category))
+	int oldCategoryIndex = categoriesList.IndexOf(category);
+
+	if (oldCategoryIndex == -1)
 	{
 		return Results.NotFound();
 	}
-
-	categoriesList.Remove(category);
-	categoriesList.Add(editedCategory);
+	categoriesList[oldCategoryIndex] = editedCategory;
 
 	foreach (var recipe in recipesList)
 	{
-		if(recipe.Categories.Contains(category))
+		if (recipe.Categories.Contains(category))
 		{
 			recipe.Categories.Remove(category);
 			recipe.Categories.Add(editedCategory);
