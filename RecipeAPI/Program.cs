@@ -78,6 +78,7 @@ app.MapPost("/recipes", async (Recipe recipe) =>
 	}
 	recipe.Id = Guid.NewGuid();
 	recipesList.Add(recipe);
+	recipesList = recipesList.OrderBy(o => o.Title).ToList();
 	await SaveAsync();
 	return Results.Created($"/recipes/{recipe.Id}", recipe);
 });
@@ -95,16 +96,15 @@ app.MapDelete("/recipes/{id}", async (Guid id) =>
 
 app.MapPut("/recipes/{id}", async (Recipe editedRecipe) =>
 {
-	int oldRecipeIndex = recipesList.FindIndex(recipe => recipe.Id == editedRecipe.Id);
-
-	if (oldRecipeIndex == -1)
+	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
 	{
-		return Results.NotFound();
+		recipesList.Remove(recipe);
+		recipesList.Add(editedRecipe);
+		recipesList = recipesList.OrderBy(o => o.Title).ToList();
+		await SaveAsync();
+		return Results.NoContent();
 	}
-
-	recipesList[oldRecipeIndex] = editedRecipe;
-	await SaveAsync();
-	return Results.NoContent();
+	return Results.NotFound();
 });
 
 app.MapGet("/categories", () =>
@@ -120,6 +120,7 @@ app.MapPost("/categories", async (string category) =>
 	}
 
 	categoriesList.Add(category);
+	categoriesList = categoriesList.OrderBy(o => o).ToList();
 	await SaveAsync();
 	return Results.Created($"/categories/{category}", category);
 });
@@ -152,13 +153,14 @@ app.MapPut("/categories/{category}", async (string category, string editedCatego
 		return Results.BadRequest();
 	}
 
-	int oldCategoryIndex = categoriesList.IndexOf(category);
-
-	if (oldCategoryIndex == -1)
+	if (!categoriesList.Contains(category))
 	{
 		return Results.NotFound();
 	}
-	categoriesList[oldCategoryIndex] = editedCategory;
+
+	categoriesList.Remove(category);
+	categoriesList.Add(editedCategory);
+	categoriesList = categoriesList.OrderBy(o => o).ToList();
 
 	foreach (var recipe in recipesList)
 	{
