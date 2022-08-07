@@ -72,6 +72,10 @@ app.MapGet("/recipes/{id}", (Guid id) =>
 
 app.MapPost("/recipes", async (Recipe recipe) =>
 {
+	if (recipe.Title == String.Empty)
+	{
+		return Results.BadRequest();
+	}
 	recipe.Id = Guid.NewGuid();
 	recipesList.Add(recipe);
 	await SaveAsync();
