@@ -114,13 +114,14 @@ app.MapGet("/categories", () =>
 
 app.MapPost("/categories", async (string category) =>
 {
-	if (category == String.Empty)
+	if (category == String.Empty || categoriesList.Contains(category))
 	{
 		return Results.BadRequest();
 	}
 
 	categoriesList.Add(category);
 	categoriesList = categoriesList.OrderBy(o => o).ToList();
+
 	await SaveAsync();
 	return Results.Created($"/categories/{category}", category);
 });
