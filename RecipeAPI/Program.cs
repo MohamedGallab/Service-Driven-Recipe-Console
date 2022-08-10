@@ -28,7 +28,7 @@ app.UseHttpsRedirection();
 app.UseCors("Cors Policy");
 
 // load previous categories if exists
-string categoriesFile = "categories.json";
+string categoriesFile = "Categories.json";
 string jsonCategoriesString;
 var categoriesList = new List<string>();
 
