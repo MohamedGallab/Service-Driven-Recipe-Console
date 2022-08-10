@@ -40,6 +40,10 @@ if (File.Exists(categoriesFile))
 		categoriesList = JsonSerializer.Deserialize<List<string>>(jsonCategoriesString)!;
 	}
 }
+else
+{
+	File.Create(categoriesFile).Dispose();
+}
 
 // load previous recipes if exists
 string recipesFile = "Recipes.json";
@@ -53,6 +57,10 @@ if (File.Exists(recipesFile))
 		jsonRecipesString = await File.ReadAllTextAsync(recipesFile);
 		recipesList = JsonSerializer.Deserialize<List<Recipe>>(jsonRecipesString)!;
 	}
+}
+else
+{
+	File.Create(recipesFile).Dispose();
 }
 
 // endpoints
