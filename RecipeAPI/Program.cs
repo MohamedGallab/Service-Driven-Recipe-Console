@@ -188,8 +188,8 @@ app.MapPut("/categories/{category}", async (string category, string editedCatego
 async Task SaveAsync()
 {
 	await Task.WhenAll(
-		File.WriteAllTextAsync(recipesFile, JsonSerializer.Serialize(recipesList)),
-		File.WriteAllTextAsync(categoriesFile, JsonSerializer.Serialize(categoriesList))
+		File.WriteAllTextAsync(recipesFile, JsonSerializer.Serialize(recipesList, new JsonSerializerOptions { WriteIndented = true })),
+		File.WriteAllTextAsync(categoriesFile, JsonSerializer.Serialize(categoriesList, new JsonSerializerOptions { WriteIndented = true }))
 		);
 }
 
