@@ -10,13 +10,17 @@ builder.Services.AddCors(options =>
 	options.AddPolicy("Cors Policy",
 		policy =>
 		{
-			policy.WithOrigins("https://localhost:7248").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+			policy
+				.WithOrigins(builder.Configuration["FrontendOrigin"])
+				.AllowAnyHeader()
+				.AllowAnyMethod()
+				.AllowCredentials();
 		});
 });
+builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAntiforgery(options => options.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
 
@@ -72,7 +76,7 @@ app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext contex
 	context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
 			new CookieOptions { HttpOnly = false });
 	context.Response.Headers.AccessControlAllowCredentials = "true";
-	context.Response.Headers.AccessControlAllowHeaders = "https://localhost:7248";
+	context.Response.Headers.AccessControlAllowHeaders = app.Configuration["FrontendOrigin"];
 });
 
 // endpoints
