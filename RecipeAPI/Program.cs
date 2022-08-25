@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using RecipeAPI.Models;
 using System.Text.Json;
 
@@ -8,12 +10,13 @@ builder.Services.AddCors(options =>
 	options.AddPolicy("Cors Policy",
 		policy =>
 		{
-			policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+			policy.WithOrigins("https://localhost:7248").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
 		});
 });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAntiforgery(options => options.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
 
@@ -63,14 +66,25 @@ else
 	File.Create(recipesFile).Dispose();
 }
 
-// endpoints
-app.MapGet("/recipes", () =>
+app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
 {
+	var tokens = forgeryService.GetAndStoreTokens(context);
+	context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
+			new CookieOptions { HttpOnly = false });
+	context.Response.Headers.AccessControlAllowCredentials = "true";
+	context.Response.Headers.AccessControlAllowHeaders = "https://localhost:7248";
+});
+
+// endpoints
+app.MapGet("/recipes", async (HttpContext context, IAntiforgery forgeryService) =>
+{
+	await forgeryService.ValidateRequestAsync(context);
 	return Results.Ok(recipesList);
 });
 
-app.MapGet("/recipes/{id}", (Guid id) =>
+app.MapGet("/recipes/{id}", async (Guid id, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
 		return Results.Ok(recipe);
@@ -78,8 +92,9 @@ app.MapGet("/recipes/{id}", (Guid id) =>
 	return Results.NotFound();
 });
 
-app.MapPost("/recipes", async (Recipe recipe) =>
+app.MapPost("/recipes", async (Recipe recipe, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (recipe.Title == String.Empty)
 	{
 		return Results.BadRequest();
@@ -91,8 +106,9 @@ app.MapPost("/recipes", async (Recipe recipe) =>
 	return Results.Created($"/recipes/{recipe.Id}", recipe);
 });
 
-app.MapDelete("/recipes/{id}", async (Guid id) =>
+app.MapDelete("/recipes/{id}", async (Guid id, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (recipesList.Find(recipe => recipe.Id == id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
@@ -102,8 +118,9 @@ app.MapDelete("/recipes/{id}", async (Guid id) =>
 	return Results.NotFound();
 });
 
-app.MapPut("/recipes/{id}", async (Recipe editedRecipe) =>
+app.MapPut("/recipes/{id}", async (Recipe editedRecipe, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (recipesList.Find(recipe => recipe.Id == editedRecipe.Id) is Recipe recipe)
 	{
 		recipesList.Remove(recipe);
@@ -115,13 +132,15 @@ app.MapPut("/recipes/{id}", async (Recipe editedRecipe) =>
 	return Results.NotFound();
 });
 
-app.MapGet("/categories", () =>
+app.MapGet("/categories", async (HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	return Results.Ok(categoriesList);
 });
 
-app.MapPost("/categories", async (string category) =>
+app.MapPost("/categories", async (string category, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (category == String.Empty || categoriesList.Contains(category))
 	{
 		return Results.BadRequest();
@@ -134,8 +153,9 @@ app.MapPost("/categories", async (string category) =>
 	return Results.Created($"/categories/{category}", category);
 });
 
-app.MapDelete("/categories/{category}", async (string category) =>
+app.MapDelete("/categories/{category}", async (string category, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (category == String.Empty)
 	{
 		return Results.BadRequest();
@@ -155,8 +175,9 @@ app.MapDelete("/categories/{category}", async (string category) =>
 	return Results.Ok(category);
 });
 
-app.MapPut("/categories/{category}", async (string category, string editedCategory) =>
+app.MapPut("/categories/{category}", async (string category, string editedCategory, HttpContext context, IAntiforgery forgeryService) =>
 {
+	await forgeryService.ValidateRequestAsync(context);
 	if (editedCategory == String.Empty)
 	{
 		return Results.BadRequest();
@@ -182,7 +203,6 @@ app.MapPut("/categories/{category}", async (string category, string editedCatego
 
 	await SaveAsync();
 	return Results.NoContent();
-
 });
 
 async Task SaveAsync()
